@@ -39,6 +39,20 @@
         while([rs next]) {
             XCTAssertEqual([rs stringForColumnIndex:0], @LC_TABLE_NAME);
         }
+
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_ID inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_TIME inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_ACCURACY inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_SPEED inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_BEARING inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_ALTITUDE inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_LATITUDE inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_LONGITUDE inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_PROVIDER inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_LOCATION_PROVIDER inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_VALID inTableWithName:@LC_TABLE_NAME]);
+        XCTAssertTrue([database columnExists:@LC_COLUMN_NAME_RECORDED_AT inTableWithName:@LC_TABLE_NAME]);
+        
         [rs close];
     }];
     
@@ -47,7 +61,7 @@
 
 - (void)testLocationTableSQLStatement {
     NSString *sql = [LocationContract createTableSQL];
-    XCTAssertEqualObjects(sql, @"CREATE TABLE IF NOT EXISTS location ( id INTEGER PRIMARY KEY AUTOINCREMENT , time REAL , accuracy REAL , speed REAL , bearing REAL , altitude REAL , latitude REAL , longitude REAL , provider TEXT , service_provider TEXT , valid INTEGER );");
+    XCTAssertEqualObjects(sql, @"CREATE TABLE IF NOT EXISTS location ( id INTEGER PRIMARY KEY AUTOINCREMENT , time REAL , accuracy REAL , speed REAL , bearing REAL , altitude REAL , latitude REAL , longitude REAL , provider TEXT , service_provider TEXT , valid INTEGER , recorded_at INTEGER )");
 }
 
 @end

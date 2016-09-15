@@ -34,7 +34,7 @@
         @{ @"name": @"int_col", @"type": [SQLColumnType sqlColumnWithType: kInteger]}
     ];
     NSString *sql = [SQLiteHelper createTableSqlStatement:tableName columns:columns];
-    XCTAssertEqualObjects(sql, @"CREATE TABLE IF NOT EXISTS TEST_TABLE ( pk_col INTEGER PRIMARY KEY AUTOINCREMENT , text_col TEXT , real_col REAL , int_col INTEGER );");
+    XCTAssertEqualObjects(sql, @"CREATE TABLE IF NOT EXISTS TEST_TABLE ( pk_col INTEGER PRIMARY KEY AUTOINCREMENT , text_col TEXT , real_col REAL , int_col INTEGER )");
 }
 
 

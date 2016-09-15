@@ -45,13 +45,12 @@
     Location *bgloc1 = [[Location alloc] init];
     bgloc1.latitude = [NSNumber numberWithDouble:12];
     bgloc1.longitude = [NSNumber numberWithDouble:11];
-    bgloc1.type = @"current";
     
     Location *stationaryLocation = [bgloc1 copy];
-    stationaryLocation.type = @"stationary";
+    stationaryLocation.radius = [NSNumber numberWithInt:123];
     
-    XCTAssertTrue([bgloc1.type isEqualToString:@"current"]);
-    XCTAssertTrue([stationaryLocation.type isEqualToString:@"stationary"]);
+    XCTAssertNil(bgloc1.radius);
+    XCTAssertTrue([stationaryLocation.radius isEqualToNumber:[NSNumber numberWithInt:123]]);
 }
 
 - (void)testDistanceFromLocation {

@@ -11,7 +11,7 @@
 
 @interface PersistLocationInThread : NSObject
 {
-    
+
 }
 // class methods go here
 - (void) noop;
@@ -39,10 +39,10 @@
 - (void)testGetAllLocationsMultiThread {
     SQLiteLocationDAO *locationDAO = [SQLiteLocationDAO sharedInstance];
     long unsigned threadsCount = 100;
-    
+
     dispatch_queue_t queue = dispatch_queue_create("com.marianhello.SQLiteLocationDAOThreadTests", DISPATCH_QUEUE_CONCURRENT);
     dispatch_group_t group = dispatch_group_create();
-    
+
     for (int i = 0; i < threadsCount; i++) {
         dispatch_group_async(group, queue, ^{
             Location *location = [[Location alloc] init];
@@ -54,19 +54,19 @@
             location.latitude = [NSNumber numberWithDouble:37+i];
             location.longitude = [NSNumber numberWithDouble:-22+i];
             location.provider = @"TEST";
-            location.serviceProvider = [NSNumber numberWithInt:-1];
-            
+            location.locationProvider = [NSNumber numberWithInt:-1];
+
             [locationDAO persistLocation:location];
         });
     }
 
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
-    
+
     NSMutableArray *locations = [NSMutableArray arrayWithArray:[locationDAO getAllLocations]];
     [locations sortUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:@"time" ascending:YES]]];
 
     XCTAssertEqual([locations count], threadsCount, @"Number of stored location is %lu expecting %lu", (unsigned long)[locations count], threadsCount);
-    
+
     for (int i = 0; i < threadsCount; i++) {
         Location *result = [locations objectAtIndex:i];
         XCTAssertTrue([result.time isEqualToDate:[NSDate dateWithTimeIntervalSince1970:100+i]], "time is %@ expecting %@", result.time, [NSDate dateWithTimeIntervalSince1970:100+i]);
@@ -77,7 +77,7 @@
         XCTAssertTrue([result.latitude isEqualToNumber:[NSNumber numberWithDouble:37+i]], "latitude is %@ expecting %@", result.latitude, [NSNumber numberWithDouble:37+i]);
         XCTAssertTrue([result.longitude isEqualToNumber:[NSNumber numberWithDouble:-22+i]], "longitude is %@ expecting %@", result.longitude, [NSNumber numberWithDouble:-22+i]);
         XCTAssertTrue([result.provider isEqualToString:@"TEST"], @"provider is expected to be TEST");
-        XCTAssertTrue([result.serviceProvider isEqualToNumber:[NSNumber numberWithInt:-1]], "service_provider is %@ expecting %@", result.serviceProvider, [NSNumber numberWithInt:-1]);
+        XCTAssertTrue([result.locationProvider isEqualToNumber:[NSNumber numberWithInt:-1]], "service_provider is %@ expecting %@", result.locationProvider, [NSNumber numberWithInt:-1]);
     }
 }
 

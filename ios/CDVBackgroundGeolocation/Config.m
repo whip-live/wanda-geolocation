@@ -12,7 +12,7 @@
 
 @implementation Config
 
-@synthesize stationaryRadius, distanceFilter, desiredAccuracy, isDebugging, activityType, stopOnTerminate, url, syncUrl, syncThreshold, httpHeaders, saveBatteryOnBackground, maxLocations, pauseLocationUpdates;
+@synthesize stationaryRadius, distanceFilter, desiredAccuracy, isDebugging, activityType, stopOnTerminate, url, syncUrl, syncThreshold, httpHeaders, saveBatteryOnBackground, maxLocations, pauseLocationUpdates, locationProvider;
 
 -(id) init {
     self = [super init];
@@ -31,6 +31,7 @@
     maxLocations = 10000;
     syncThreshold = 100;
     pauseLocationUpdates = YES;
+    locationProvider = DISTANCE_FILTER_PROVIDER;
 
     return self;
 }
@@ -79,6 +80,9 @@
     }
     if (isNull(config[@"pauseLocationUpdates"]) == NO) {
         instance.pauseLocationUpdates = [config[@"pauseLocationUpdates"] boolValue];
+    }
+    if (isNull(config[@"locationProvider"]) == NO) {
+        instance.locationProvider = [config[@"locationProvider"] integerValue];
     }
 
     return instance;

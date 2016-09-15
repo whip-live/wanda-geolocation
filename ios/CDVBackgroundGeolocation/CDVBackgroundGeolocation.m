@@ -13,6 +13,7 @@
 #import "CDVBackgroundGeolocation.h"
 #import "Config.h"
 #import "Logging.h"
+#import "LocationManager.h"
 
 @implementation CDVBackgroundGeolocation {
     FMDBLogger *sqliteLogger;
@@ -54,9 +55,7 @@
 
 /**
  * configure plugin
- * @param {Number} stationaryRadius
- * @param {Number} distanceFilter
- * @param {Number} locationTimeout
+ * @param {CDVInvokedUrlCommand} command with configuration dictionary argument
  */
 - (void) configure:(CDVInvokedUrlCommand*)command
 {
@@ -67,7 +66,7 @@
         NSError *error = nil;
         CDVPluginResult* result = nil;
         if (![manager configure:config error:&error]) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:@"Configuration error"];
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[error userInfo]];
             [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         }
     }];
@@ -80,19 +79,17 @@
  */
 - (void) start:(CDVInvokedUrlCommand*)command
 {
-    [self.commandDelegate runInBackground:^{
-        NSError *error = nil;
-        CDVPluginResult* result = nil;
-
-        [manager start:&error];
-        if (error == nil) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        } else {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[error userInfo]];
-        }
-        
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
+    NSError *error = nil;
+    CDVPluginResult* result = nil;
+    
+    [manager start:&error];
+    if (error == nil) {
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[error userInfo]];
+    }
+    
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 /**
@@ -100,29 +97,26 @@
  */
 - (void) stop:(CDVInvokedUrlCommand*)command
 {
-    [self.commandDelegate runInBackground:^{
-        NSError *error = nil;
-        CDVPluginResult* result = nil;
-        if ([manager stop:&error]) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        } else {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[error userInfo]];
-        }
-        
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
+    NSError *error = nil;
+    CDVPluginResult* result = nil;
+
+    if ([manager stop:&error]) {
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    } else {
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:[error userInfo]];
+    }
+    
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 /**
- * Change 
+ * Change
  * @param {Number} operation mode BACKGROUND/FOREGROUND
  */
 - (void) switchMode:(CDVInvokedUrlCommand *)command
 {
-    [self.commandDelegate runInBackground:^{
-        BGOperationMode mode = [[command.arguments objectAtIndex: 0] intValue];
-        [manager switchMode:mode];
-    }];
+    BGOperationMode mode = [[command.arguments objectAtIndex: 0] intValue];
+    [manager switchMode:mode];
 }
 
 - (void) addStationaryRegionListener:(CDVInvokedUrlCommand*)command
@@ -132,10 +126,9 @@
             stationaryRegionListeners = [[NSMutableArray alloc] init];
         }
         [stationaryRegionListeners addObject:command.callbackId];
-        NSMutableDictionary* stationaryLocation = [manager getStationaryLocation];
+        Location* stationaryLocation = [manager getStationaryLocation];
         if (stationaryLocation != nil) {
-            // TODO: do this in background thread
-            CDVPluginResult* result =[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:stationaryLocation];
+            CDVPluginResult* result =[CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[stationaryLocation toDictionary]];
             [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
         }
     }];
@@ -149,9 +142,9 @@
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* result = nil;
 
-        NSMutableDictionary* stationaryLocation = [manager getStationaryLocation];
-        if (stationaryLocation) {
-            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:stationaryLocation];
+        Location* stationaryLocation = [manager getStationaryLocation];
+        if (stationaryLocation != nil) {
+            result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[stationaryLocation toDictionary]];
         } else {
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:NO];
         }
@@ -197,7 +190,12 @@
 {
     [self.commandDelegate runInBackground:^{
         NSArray *locations = [manager getLocations];
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:locations];
+        NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
+        for (Location* location in locations) {
+            [dictionaryLocations addObject:[location toDictionary]];
+        }
+
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:dictionaryLocations];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
 }
@@ -206,7 +204,12 @@
 {
     [self.commandDelegate runInBackground:^{
         NSArray *locations = [manager getValidLocations];
-        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:locations];
+        NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
+        for (Location* location in locations) {
+            [dictionaryLocations addObject:[location toDictionaryWithId]];
+        }
+
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:dictionaryLocations];
         [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
     }];
 }
@@ -250,7 +253,7 @@
 
 
 /**@
- * Resume.  Turn background off
+ * Resume. Turn background off
  */
 -(void) onResume:(NSNotification *)notification
 {
@@ -294,18 +297,18 @@
     }];
 }
 
-- (void) onLocationChanged:(NSMutableDictionary*)location
+- (void) onLocationChanged:(Location*)location
 {
     [self.commandDelegate runInBackground:^{
         DDLogDebug(@"CDVBackgroundGeolocation onLocationChanged");
         CDVPluginResult* result = nil;
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:location];
+        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[location toDictionary]];
         [result setKeepCallbackAsBool:YES];
         [self.commandDelegate sendPluginResult:result callbackId:syncCallbackId];
     }];
 }
 
-- (void) onStationaryChanged:(NSMutableDictionary*)location
+- (void) onStationaryChanged:(Location*)location
 {
     [self.commandDelegate runInBackground:^{
         DDLogDebug(@"CDVBackgroundGeolocation onStationaryChanged");
@@ -314,7 +317,7 @@
             return;
         }
         
-        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:location];
+        CDVPluginResult *result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:[location toDictionary]];
         [result setKeepCallbackAsBool:YES];
         for (NSString *callbackId in stationaryRegionListeners) {
             [self.commandDelegate sendPluginResult:result callbackId:callbackId];

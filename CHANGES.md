@@ -1,5 +1,13 @@
 ## Changelog
 
+### [2.3.0-alpha.1] - unreleased
+### Added
+- iOS ACTIVITY_PROVIDER
+
+### Changed
+- renamed providers now DISTANCE_FILTER_PROVIDER and ACTIVITY_PROVIDER
+- iOS dropping support for iOS < 6
+
 ### [2.2.3] - 2016-09-23
 ### Fixed
 - Android issue #173 - allow stop service and prevent crash on destroy

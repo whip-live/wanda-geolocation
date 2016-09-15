@@ -6,9 +6,9 @@ Cross-platform geolocation for Cordova / PhoneGap with battery-saving "circular 
 
 Plugin can be used for geolocation when app is running in foreground or background. It is more battery and data efficient then html5 geolocation or cordova-geolocation plugin. It can be used side by side with other geolocation providers (eg. html5 navigator.geolocation).
 
-On Android you can choose from two location location providers:
-* **ANDROID_DISTANCE_FILTER_PROVIDER** (forked from [cordova-plugin-background-geolocation](https://github.com/christocracy/cordova-plugin-background-geolocation))
-* **ANDROID_ACTIVITY_PROVIDER**
+You can choose from two location location providers (both iOS and Android):
+* **DISTANCE_FILTER_PROVIDER**
+* **ACTIVITY_PROVIDER**
 
 See [Which provider should I use?](https://github.com/mauron85/cordova-plugin-background-geolocation/blob/master/PROVIDERS.md) for more information about providers.
 
@@ -35,7 +35,7 @@ Some incompatible changes were introduced:
 
 * option `stopOnTerminate` defaults to true
 * option `locationService` renamed to `locationProvider`
-* android providers are now **ANDROID_DISTANCE_FILTER_PROVIDER** and **ANDROID_ACTIVITY_PROVIDER**
+* providers are now **DISTANCE_FILTER_PROVIDER** and **ACTIVITY_PROVIDER**
 * removed `locationTimeout` option (use `interval` in milliseconds instead)
 * `notificationIcon` was replaced with two separate options (`notificationIconSmall` and `notificationIconLarge`)
 * js object backgroundGeoLocation is deprecated use `backgroundGeolocation` instead
@@ -113,7 +113,7 @@ function onDeviceReady () {
 
     // BackgroundGeolocation is highly configurable. See platform specific configuration options
     backgroundGeolocation.configure(callbackFn, failureFn, {
-        desiredAccuracy: 10,
+        desiredAccuracy: backgroundGeolocation.accuracy.MEDIUM,
         stationaryRadius: 20,
         distanceFilter: 30,
         interval: 60000
@@ -165,7 +165,7 @@ Configure options:
 | `maxLocations`            | `Number`          | all          | Limit maximum number of locations stored into db (default: 10000)                                                                                                                                                                                                                                                                                  |
 
 Following options are specific to provider as defined by locationProvider option
-### ANDROID_ACTIVITY_PROVIDER provider options
+### ACTIVITY_PROVIDER provider options
 
 | Parameter             | Type      | Platform | Description                                                                                                                                                                                                                      |
 |-----------------------|-----------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -310,14 +310,14 @@ Parameter `limit` limits number of returned entries.
 
 ``` javascript
 backgroundGeolocation.configure(callbackFn, failureFn, {
-    desiredAccuracy: 10,
+    desiredAccuracy: backgroundGeolocation.accuracy.MEDIUM,
     stationaryRadius: 20,
     distanceFilter: 30,
     url: 'http://192.168.81.15:3000/locations',
     httpHeaders: { 'X-FOO': 'bar' },
     maxLocations: 1000,
     // Android only section
-    locationProvider: backgroundGeolocation.provider.ANDROID_ACTIVITY_PROVIDER,
+    locationProvider: backgroundGeolocation.provider.ACTIVITY_PROVIDER,
     interval: 60000,
     fastestInterval: 5000,
     activitiesInterval: 10000,
@@ -424,7 +424,7 @@ On Android devices it is recommended to have a notification in the drawer (optio
 
 #### Custom ROMs
 
-Plugin should work with custom ROMS at least ANDROID_DISTANCE_FILTER_PROVIDER. But ANDROID_ACTIVITY_PROVIDER provider depends on Google Play Services.
+Plugin should work with custom ROMS at least DISTANCE_FILTER_PROVIDER. But ACTIVITY_PROVIDER provider depends on Google Play Services.
 Usually ROMs don't include Google Play Services libraries. Strange bugs may occur, like no GPS locations (only from network and passive) and other. When posting issue report, please mention that you're using custom ROM.
 
 #### Multidex

@@ -18,8 +18,10 @@ var backgroundGeolocation = {
      * @property {Object} provider
      */
     provider: {
-        ANDROID_DISTANCE_FILTER_PROVIDER: 0,
-        ANDROID_ACTIVITY_PROVIDER: 1
+        ANDROID_DISTANCE_FILTER_PROVIDER: 0, //@deprecated
+        ANDROID_ACTIVITY_PROVIDER: 1, //@deprecated
+        DISTANCE_FILTER_PROVIDER: 0,
+        ACTIVITY_PROVIDER: 1
     },
 
     mode: {

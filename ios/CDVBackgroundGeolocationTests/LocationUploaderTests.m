@@ -30,7 +30,7 @@
 - (void)testSync {
     SQLiteLocationDAO *locationDAO = [SQLiteLocationDAO sharedInstance];
     Location *location;
-    
+
     for (int i = 0; i < 10; i++) {
         location = [[Location alloc] init];
         location.time = [NSDate dateWithTimeIntervalSince1970:1465511097774.577+i];
@@ -41,15 +41,15 @@
         location.latitude = [NSNumber numberWithDouble:37.35439853+i];
         location.longitude = [NSNumber numberWithDouble:-122.1100721+i];
         location.provider = @"TEST";
-        location.serviceProvider = [NSNumber numberWithInt:-1];
-        
+        location.locationProvider = [NSNumber numberWithInt:-1];
+
         [locationDAO persistLocation:location];
     }
-    
+
     LocationUploader *uploader = [[LocationUploader alloc] init];
     [uploader sync:@"http://192.168.81.15:3000/testSync" onLocationThreshold:10];
     sleep(5);
-    
+
 }
 
 @end

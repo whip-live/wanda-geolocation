@@ -3,7 +3,7 @@
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
         id="cordova-plugin-mauron85-background-geolocation"
-        version="2.2.3">
+        version="2.3.0-alpha.1">
     <name>CDVBackgroundGeolocation</name>
     <description>Cordova Background Geolocation Plugin</description>
     <license>Apache-2.0</license>
@@ -171,10 +171,13 @@
             </feature>
         </config-file>
         <framework src="CoreLocation.framework" />
+        <framework src="CoreMotion.framework" />
         <framework src="SystemConfiguration.framework" />
         <framework src="AudioToolbox.framework" weak="true" />
         <framework src="AVFoundation.framework" weak="true" />
         <framework src="libsqlite3.dylib" weak="true" />
+        <header-file src="ios/CDVBackgroundGeolocation/ActivityLocationProvider.h" />
+        <source-file src="ios/CDVBackgroundGeolocation/ActivityLocationProvider.m" />
         <header-file src="ios/CDVBackgroundGeolocation/BackgroundTaskManager.h" />
         <source-file src="ios/CDVBackgroundGeolocation/BackgroundTaskManager.m" />
         <header-file src="ios/CDVBackgroundGeolocation/CDVBackgroundGeolocation.h" />
@@ -183,6 +186,8 @@
         <source-file src="ios/CDVBackgroundGeolocation/CocoaLumberjack.m" />
         <header-file src="ios/CDVBackgroundGeolocation/Config.h" />
         <source-file src="ios/CDVBackgroundGeolocation/Config.m" />
+        <header-file src="ios/CDVBackgroundGeolocation/DistanceFilterLocationProvider.h" />
+        <source-file src="ios/CDVBackgroundGeolocation/DistanceFilterLocationProvider.m" />
         <header-file src="ios/CDVBackgroundGeolocation/FMDB.h" />
         <source-file src="ios/CDVBackgroundGeolocation/FMDB.m" />
         <header-file src="ios/CDVBackgroundGeolocation/FMDBLogger.h" />
@@ -193,8 +198,11 @@
         <source-file src="ios/CDVBackgroundGeolocation/Location.m" />
         <header-file src="ios/CDVBackgroundGeolocation/LocationContract.h" />
         <source-file src="ios/CDVBackgroundGeolocation/LocationContract.m" />
+        <header-file src="ios/CDVBackgroundGeolocation/LocationDelegate.h" />
         <header-file src="ios/CDVBackgroundGeolocation/LocationManager.h" />
         <source-file src="ios/CDVBackgroundGeolocation/LocationManager.m" />
+        <header-file src="ios/CDVBackgroundGeolocation/LocationProvider.h" />
+        <source-file src="ios/CDVBackgroundGeolocation/LocationProvider.m" />
         <header-file src="ios/CDVBackgroundGeolocation/LocationUploader.h" />
         <source-file src="ios/CDVBackgroundGeolocation/LocationUploader.m" />
         <header-file src="ios/CDVBackgroundGeolocation/Logging.h" />
@@ -207,5 +215,11 @@
         <source-file src="ios/CDVBackgroundGeolocation/SQLiteLocationDAO.m" />
         <header-file src="ios/CDVBackgroundGeolocation/SQLiteOpenHelper.h" />
         <source-file src="ios/CDVBackgroundGeolocation/SQLiteOpenHelper.m" />
+        <header-file src="ios/SOMotionDetector/SOLocationManager.h" />
+        <source-file src="ios/SOMotionDetector/SOLocationManager.m" />
+        <header-file src="ios/SOMotionDetector/SOMotionDetector.h" />
+        <source-file src="ios/SOMotionDetector/SOMotionDetector.m" />
+        <header-file src="ios/SOMotionDetector/SOStepDetector.h" />
+        <source-file src="ios/SOMotionDetector/SOStepDetector.m" />
      </platform>
 </plugin>

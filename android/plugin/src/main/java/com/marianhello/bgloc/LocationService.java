@@ -179,7 +179,7 @@ public class LocationService extends Service {
                     getStringResource(Config.ACCOUNT_NAME_RESOURCE),
                     getStringResource(Config.ACCOUNT_TYPE_RESOURCE)));
 
-        registerReceiver(connectivityChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        //registerReceiver(connectivityChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     @Override
@@ -191,7 +191,7 @@ public class LocationService extends Service {
         } else {
             handlerThread.quit(); //sorry
         }
-        unregisterReceiver(connectivityChangeReceiver);
+        //unregisterReceiver(connectivityChangeReceiver);
         super.onDestroy();
     }
 
@@ -385,7 +385,7 @@ public class LocationService extends Service {
 
     @Override
     public void unregisterReceiver (BroadcastReceiver receiver) {
-        super.unregisterReceiver(receiver);
+        //super.unregisterReceiver(receiver);
     }
 
     public void handleError(JSONObject error) {

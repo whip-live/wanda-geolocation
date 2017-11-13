@@ -1,5 +1,6 @@
 package com.marianhello.bgloc;
 
+//OLD VERSION
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,7 +11,21 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
+// NEW VERSION
+import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.net.Uri;
+import android.os.Looper;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.util.Log;
+import android.widget.Toast;
 
+//OLD VERSION
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
@@ -20,6 +35,22 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.marianhello.logging.LoggerManager;
+//NEW VERSION
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.ArrayList;
 
@@ -39,6 +70,10 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     private Boolean isWatchingActivity = false;
     private DetectedActivity lastActivity = new DetectedActivity(DetectedActivity.UNKNOWN, 100);
 
+    private FusedLocationProviderClient mFusedLocationClient;
+
+    private LocationCallback mLocationCallback;
+
     private org.slf4j.Logger log;
 
     public ActivityRecognitionLocationProvider(LocationService locationService) {
@@ -52,24 +87,28 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
         log = LoggerManager.getLogger(ActivityRecognitionLocationProvider.class);
         log.info("Creating ActivityRecognitionLocationProvider");
 
-        PowerManager pm = (PowerManager) locationService.getSystemService(Context.POWER_SERVICE);
+        /*PowerManager pm = (PowerManager) locationService.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-        wakeLock.acquire();
+        wakeLock.acquire();*/
 
-        Intent detectedActivitiesIntent = new Intent(DETECTED_ACTIVITY_UPDATE);
+
+        /*Intent detectedActivitiesIntent = new Intent(DETECTED_ACTIVITY_UPDATE);
         detectedActivitiesPI = PendingIntent.getBroadcast(locationService, 9002, detectedActivitiesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        registerReceiver(detectedActivitiesReceiver, new IntentFilter(DETECTED_ACTIVITY_UPDATE));
+        registerReceiver(detectedActivitiesReceiver, new IntentFilter(DETECTED_ACTIVITY_UPDATE));*/
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(locationService);
+        createLocationCallback();
     }
 
     @Override
     public void onLocationChanged(Location location) {
         log.debug("Location change: {}", location.toString());
 
-        if (lastActivity.getType() == DetectedActivity.STILL) {
+        /*if (lastActivity.getType() == DetectedActivity.STILL) {
             handleStationary(location);
             stopTracking();
             return;
-        }
+        }*/
 
         if (config.isDebugging()) {
             Toast.makeText(locationService, "acy:" + location.getAccuracy() + ",v:" + location.getSpeed() + ",df:" + config.getDistanceFilter(), Toast.LENGTH_LONG).show();
@@ -87,10 +126,24 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
         handleLocation(location);
     }
 
+    /**
+     * Creates a callback for receiving location events.
+     */
+    private void createLocationCallback() {
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+
+                onLocationChanged(locationResult.getLastLocation());
+            }
+        };
+    }
+
     public void startRecording() {
         log.info("Start recording");
         this.startRecordingOnConnect = true;
-        attachRecorder();
+        startTracking();
     }
 
     public void stopRecording() {
@@ -103,14 +156,28 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     public void startTracking() {
         if (isTracking) { return; }
 
+        Log.i("wanda-geoloc", "start tracking");
         Integer priority = translateDesiredAccuracy(config.getDesiredAccuracy());
-        LocationRequest locationRequest = LocationRequest.create()
-                .setPriority(priority) // this.accuracy
-                .setFastestInterval(config.getFastestInterval())
-                .setInterval(config.getInterval());
-                // .setSmallestDisplacement(config.getStationaryRadius());
+        /*LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY) // this.accuracy
+                .setFastestInterval(500)
+                .setInterval(1000);
+                // .setSmallestDisplacement(config.getStationaryRadius());*/
+        LocationRequest locationRequest = new LocationRequest();
+
+        // Sets the desired interval for active location updates. This interval is
+        // inexact. You may not receive updates at all if no location sources are available, or
+        // you may receive them slower than requested. You may also receive updates faster than
+        // requested if other applications are requesting location at a faster interval.
+        locationRequest.setInterval(config.getInterval());
+
+        // Sets the fastest rate for active location updates. This interval is exact, and your
+        // application will never receive updates faster than this value.
+        locationRequest.setFastestInterval(config.getFastestInterval());
+
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         try {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, Looper.myLooper());
             isTracking = true;
             log.debug("Start tracking with priority={} fastestInterval={} interval={} activitiesInterval={} stopOnStillActivity={}", priority, config.getFastestInterval(), config.getInterval(), config.getActivitiesInterval(), config.getStopOnStillActivity());
         } catch (SecurityException e) {
@@ -122,7 +189,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     public void stopTracking() {
         if (!isTracking) { return; }
 
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
         isTracking = false;
     }
 
@@ -287,6 +354,6 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
         stopRecording();
         disconnectFromPlayAPI();
         unregisterReceiver(detectedActivitiesReceiver);
-        wakeLock.release();
+        //wakeLock.release();
     }
 }
